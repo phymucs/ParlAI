@@ -135,19 +135,12 @@ def normalize_answer(s):
     Lower text and remove punctuation, articles and extra whitespace.
     """
 
-    def remove_articles(text):
-        return re_art.sub(' ', text)
-
-    def white_space_fix(text):
-        return ' '.join(text.split())
-
-    def remove_punc(text):
-        return re_punc.sub(' ', text)  # convert punctuation to spaces
-
-    def lower(text):
-        return text.lower()
-
-    return white_space_fix(remove_articles(remove_punc(lower(s))))
+    s = s.lower()
+    s = re_punc.sub(' ', s)
+    s = re_art.sub(' ', s)
+    # TODO: this could almost certainly be faster with a regex \s+ -> ' '
+    s = ' '.join(s.split())
+    return s
 
 
 def aggregate_task_reports(reports, tasks, micro=False):
@@ -195,17 +188,16 @@ def aggregate_task_reports(reports, tasks, micro=False):
     return total_report
 
 
-def _exact_match(guess, answers):
-    """
-    Check if guess is a (normalized) exact match with any answer.
-    """
-    if guess is None or answers is None:
-        return False
-    guess = normalize_answer(guess)
-    for a in answers:
-        if guess == normalize_answer(a):
-            return True
-    return False
+class ExactMatchMetric(AverageMetric):
+    @staticmethod
+    def compute(guess: str, answers: List[str]) -> 'ExactMatchMetric':
+        if guess is None or answers is None:
+            return None
+        guess = normalize_answer(guess)
+        for a in answers:
+            if guess == normalize_answer(a):
+                return ExactMatchMetric(1, 1)
+        return ExactMetric(0, 1)
 
 
 def _prec_recall_f1_score(pred_items, gold_items):
