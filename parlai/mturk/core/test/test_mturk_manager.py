@@ -21,6 +21,7 @@ from websocket_server import WebsocketServer
 
 import parlai.mturk.core.mturk_manager as MTurkManagerFile
 import parlai.mturk.core.data_model as data_model
+import parlai.utils.testing as testing_utils
 
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 MTurkManagerFile.parent_dir = os.path.dirname(os.path.abspath(__file__))
@@ -138,7 +139,7 @@ class InitTestMTurkManager(unittest.TestCase):
         argparser = ParlaiParser(False, False)
         argparser.add_parlai_data_path()
         argparser.add_mturk_args()
-        self.opt = argparser.parse_args(print_args=False)
+        self.opt = argparser.parse_args([], print_args=False)
         self.opt['task'] = 'unittest'
         self.opt['assignment_duration_in_seconds'] = 6
         self.mturk_agent_ids = ['mturk_agent_1', 'mturk_agent_2']
@@ -209,7 +210,7 @@ class TestMTurkManagerUnitFunctions(unittest.TestCase):
         argparser = ParlaiParser(False, False)
         argparser.add_parlai_data_path()
         argparser.add_mturk_args()
-        self.opt = argparser.parse_args(print_args=False)
+        self.opt = argparser.parse_args([], print_args=False)
         self.opt['task'] = 'unittest'
         self.opt['assignment_duration_in_seconds'] = 6
         self.mturk_agent_ids = ['mturk_agent_1', 'mturk_agent_2']
@@ -786,6 +787,7 @@ class TestMTurkManagerUnitFunctions(unittest.TestCase):
         manager._handle_mturk_message.assert_called_once_with(message_packet)
         manager.worker_manager.route_packet.assert_not_called()
 
+    @testing_utils.retry()
     def test_onboarding_function(self):
         manager = self.mturk_manager
         manager.onboard_function = mock.MagicMock()
@@ -880,6 +882,7 @@ class TestMTurkManagerUnitFunctions(unittest.TestCase):
             TEST_WORKER_ID_1, TEST_ASSIGNMENT_ID_1
         )
 
+    @testing_utils.retry()
     def test_wait_for_task_expirations(self):
         """
         Ensure waiting for expiration time actually works out.
@@ -934,7 +937,7 @@ class TestMTurkManagerPoolHandling(unittest.TestCase):
         argparser = ParlaiParser(False, False)
         argparser.add_parlai_data_path()
         argparser.add_mturk_args()
-        self.opt = argparser.parse_args(print_args=False)
+        self.opt = argparser.parse_args([], print_args=False)
         self.opt['task'] = 'unittest'
         self.opt['assignment_duration_in_seconds'] = 6
         self.mturk_agent_ids = ['mturk_agent_1', 'mturk_agent_2']
@@ -1046,7 +1049,7 @@ class TestMTurkManagerTimeHandling(unittest.TestCase):
         argparser = ParlaiParser(False, False)
         argparser.add_parlai_data_path()
         argparser.add_mturk_args()
-        self.opt = argparser.parse_args(print_args=False)
+        self.opt = argparser.parse_args([], print_args=False)
         self.opt['task'] = 'unittest'
         self.opt['assignment_duration_in_seconds'] = 6
         self.mturk_agent_ids = ['mturk_agent_1', 'mturk_agent_2']
@@ -1147,7 +1150,7 @@ class TestMTurkManagerLifecycleFunctions(unittest.TestCase):
         argparser = ParlaiParser(False, False)
         argparser.add_parlai_data_path()
         argparser.add_mturk_args()
-        self.opt = argparser.parse_args(print_args=False)
+        self.opt = argparser.parse_args([], print_args=False)
         self.opt['task'] = 'unittest'
         self.opt['task_description'] = 'Test task description'
         self.opt['assignment_duration_in_seconds'] = 6
@@ -1161,6 +1164,7 @@ class TestMTurkManagerLifecycleFunctions(unittest.TestCase):
         self.mturk_manager.shutdown()
         self.fake_socket.close()
 
+    @testing_utils.retry()
     def test_full_lifecycle(self):
         manager = self.mturk_manager
         server_url = 'https://fake_server_url'
@@ -1290,7 +1294,7 @@ class TestMTurkManagerConnectedFunctions(unittest.TestCase):
         argparser = ParlaiParser(False, False)
         argparser.add_parlai_data_path()
         argparser.add_mturk_args()
-        self.opt = argparser.parse_args(print_args=False)
+        self.opt = argparser.parse_args([], print_args=False)
         self.opt['task'] = 'unittest'
         self.opt['assignment_duration_in_seconds'] = 6
         self.mturk_agent_ids = ['mturk_agent_1', 'mturk_agent_2']
@@ -1728,6 +1732,7 @@ class TestMTurkManagerConnectedFunctions(unittest.TestCase):
         self.assertEqual(assignment_id, self.agent_1.assignment_id)
         self.assertDictEqual(data, self.agent_1.get_inactive_command_data())
 
+    @testing_utils.retry()
     def test_restore_state(self):
         manager = self.mturk_manager
         worker_manager = manager.worker_manager
